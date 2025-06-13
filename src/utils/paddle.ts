@@ -1,4 +1,4 @@
-// Paddle.js integration utility for real-time payments
+// Paddle.js v2 integration utility for real-time payments
 declare global {
   interface Window {
     Paddle: any;
@@ -13,11 +13,11 @@ export interface PaddleCheckoutOptions {
   customData?: {
     userId?: string;
     planType?: string;
+    billingCycle?: string;
   };
   customer?: {
     email?: string;
   };
-  successUrl?: string;
   settings?: {
     displayMode?: 'inline' | 'overlay';
     theme?: 'light' | 'dark';
@@ -28,9 +28,8 @@ export interface PaddleCheckoutOptions {
 export class PaddleService {
   private static instance: PaddleService;
   private isInitialized = false;
-  private readonly sellerId = '233505';
-  private readonly environment = 'production'; // Live environment
-  private readonly apiKey = 'pdl_live_apikey_01jxjhr5jjh2mhne2dnf9yz5s3_67xW4eB7Tt7Zk2FyP8pNM5_AnN';
+  private readonly clientToken = 'live_09f0758b28567d8bcbf3f62f734'; // Your live client token
+  private readonly environment = 'production';
 
   private constructor() {}
 
@@ -51,22 +50,23 @@ export class PaddleService {
         existingScript.remove();
       }
 
-      // Load Paddle.js script
+      // Load Paddle.js v2 script
       const script = document.createElement('script');
       script.src = 'https://cdn.paddle.com/paddle/v2/paddle.js';
       script.async = true;
       
       script.onload = () => {
         try {
-          // Initialize Paddle with your seller ID
           if (window.Paddle) {
-            window.Paddle.Environment.set(this.environment);
-            window.Paddle.Setup({ 
-              seller: parseInt(this.sellerId),
+            // Initialize Paddle v2 with client token
+            window.Paddle.Initialize({
+              token: this.clientToken,
+              environment: this.environment,
               eventCallback: this.handlePaddleEvent.bind(this)
             });
+            
             this.isInitialized = true;
-            console.log('Paddle initialized successfully');
+            console.log('Paddle v2 initialized successfully');
             resolve();
           } else {
             throw new Error('Paddle object not available');
@@ -102,30 +102,73 @@ export class PaddleService {
       case 'checkout.loaded':
         console.log('Checkout loaded successfully');
         break;
+      default:
+        console.log('Unhandled Paddle event:', data.name);
     }
   }
 
   private handleCheckoutCompleted(data: any) {
     console.log('Payment completed successfully:', data);
     
-    // Show success message
     const customData = data.data?.custom_data;
+    const transactionId = data.data?.transaction?.id || data.data?.id;
+    
     if (customData?.planType === 'donation') {
-      alert(`Thank you for your generous donation! 🙏\nTransaction ID: ${data.data?.transaction_id}`);
-      window.location.href = '/dashboard?payment=success&type=donation';
+      // Handle donation completion
+      this.showSuccessMessage(
+        'Thank you for your generous donation! 🙏',
+        `Your support helps us continue building amazing tools for developers.`,
+        transactionId
+      );
+      
+      // Redirect to dashboard with success indicator
+      setTimeout(() => {
+        window.location.href = '/dashboard?payment=success&type=donation';
+      }, 3000);
     } else {
-      alert(`Subscription activated successfully! 🎉\nWelcome to ${customData?.planType} plan!\nTransaction ID: ${data.data?.transaction_id}`);
-      window.location.href = '/dashboard?payment=success';
+      // Handle subscription completion
+      const planName = customData?.planType || 'Premium';
+      const billingCycle = customData?.billingCycle || 'monthly';
+      
+      this.showSuccessMessage(
+        'Subscription activated successfully! 🎉',
+        `Welcome to the ${planName} plan (${billingCycle})! You now have access to all premium features.`,
+        transactionId
+      );
+      
+      // Redirect to dashboard with success indicator
+      setTimeout(() => {
+        window.location.href = '/dashboard?payment=success&plan=' + planName;
+      }, 3000);
     }
   }
 
   private handleCheckoutClosed(data: any) {
     console.log('Checkout closed by user:', data);
+    // Optionally show a message or track the abandonment
   }
 
   private handleCheckoutError(data: any) {
     console.error('Checkout error occurred:', data);
-    alert(`Payment failed: ${data.error?.message || 'Unknown error occurred'}\nPlease try again or contact support.`);
+    const errorMessage = data.error?.message || data.message || 'An unknown error occurred during payment processing.';
+    
+    this.showErrorMessage(
+      'Payment Failed',
+      `We encountered an issue processing your payment: ${errorMessage}`,
+      'Please try again or contact our support team if the problem persists.'
+    );
+  }
+
+  private showSuccessMessage(title: string, message: string, transactionId?: string) {
+    const fullMessage = transactionId 
+      ? `${message}\n\nTransaction ID: ${transactionId}\n\nYou will receive a confirmation email shortly.`
+      : `${message}\n\nYou will receive a confirmation email shortly.`;
+    
+    alert(`${title}\n\n${fullMessage}`);
+  }
+
+  private showErrorMessage(title: string, message: string, suggestion: string) {
+    alert(`${title}\n\n${message}\n\n${suggestion}\n\nIf you need help, contact support@devmint.site`);
   }
 
   async openCheckout(options: PaddleCheckoutOptions): Promise<void> {
@@ -141,23 +184,38 @@ export class PaddleService {
     console.log('Opening Paddle checkout with options:', options);
 
     try {
+      // Prepare checkout options for Paddle v2
       const checkoutOptions = {
-        items: options.items,
-        customer: options.customer || {},
-        customData: options.customData || {},
+        items: options.items.map(item => ({
+          priceId: item.priceId,
+          quantity: item.quantity || 1
+        })),
+        customData: {
+          userId: 'user_' + Date.now(), // Generate a temporary user ID
+          timestamp: new Date().toISOString(),
+          ...options.customData
+        },
         settings: {
           displayMode: 'overlay',
           theme: 'light',
           locale: 'en',
           allowLogout: false,
-          showAddTaxId: false,
+          showAddTaxId: true,
+          showAddDiscounts: true,
           ...options.settings
         }
       };
 
+      // Add customer information if provided
+      if (options.customer?.email) {
+        checkoutOptions.customer = {
+          email: options.customer.email
+        };
+      }
+
       console.log('Final checkout options:', checkoutOptions);
       
-      // Open the real Paddle checkout
+      // Open Paddle v2 checkout
       window.Paddle.Checkout.open(checkoutOptions);
       
     } catch (error) {
@@ -166,7 +224,7 @@ export class PaddleService {
     }
   }
 
-  // Create a donation checkout with custom amount
+  // Create a donation checkout - Note: You'll need to create products in Paddle dashboard
   async createDonationCheckout(amount: number, description: string = 'Donation to Devmint'): Promise<void> {
     if (!this.isInitialized) {
       await this.initialize();
@@ -177,63 +235,16 @@ export class PaddleService {
       throw new Error('Minimum donation amount is $1.00');
     }
 
-    // For donations, we'll use Paddle's Pay Links API or create a custom product
-    // Since we need custom amounts, we'll use the Pay Links approach
     try {
-      const payLinkData = {
-        items: [{
-          price: {
-            description: description,
-            name: `Donation - $${amount.toFixed(2)}`,
-            billing_cycle: null,
-            trial_period: null,
-            tax_mode: 'account_setting',
-            unit_price: {
-              amount: Math.round(amount * 100).toString(), // Convert to cents
-              currency_code: 'USD'
-            }
-          },
-          quantity: 1
-        }],
-        custom_data: {
-          planType: 'donation',
-          amount: amount,
-          description: description
-        },
-        checkout_settings: {
-          display_mode: 'overlay',
-          theme: 'light',
-          locale: 'en'
-        }
-      };
-
-      // For now, we'll use the standard checkout with a predefined donation product
-      // You would need to create a donation product in your Paddle dashboard
-      // For testing, let's use a simple approach
+      // For donations, you'll need to create donation products in your Paddle dashboard
+      // with different price points, or use Paddle's custom pricing API
       
-      await this.openCheckout({
-        items: [{ 
-          priceId: 'custom_donation', // You'll need to create this in Paddle dashboard
-          quantity: 1 
-        }],
-        customData: {
-          planType: 'donation',
-          amount: amount,
-          description: description
-        },
-        settings: {
-          displayMode: 'overlay'
-        }
-      });
-
-    } catch (error) {
-      console.error('Donation checkout error:', error);
-      
-      // Fallback: Show a message about creating donation products
+      // For now, let's show instructions to the user
       const confirmed = confirm(
-        `To process donations, we need to set up a donation product in Paddle.\n\n` +
-        `For now, would you like to contact us about your $${amount.toFixed(2)} donation?\n\n` +
-        `Click OK to send an email, or Cancel to go back.`
+        `Donation Feature Setup Required\n\n` +
+        `To process your $${amount.toFixed(2)} donation, we need to set up donation products in our Paddle dashboard.\n\n` +
+        `Would you like us to contact you about processing this donation?\n\n` +
+        `Click OK to send an email with your donation intent, or Cancel to go back.`
       );
       
       if (confirmed) {
@@ -241,11 +252,27 @@ export class PaddleService {
         const body = encodeURIComponent(
           `Hi Devmint Team,\n\n` +
           `I would like to make a donation of $${amount.toFixed(2)} to support your work.\n\n` +
-          `Please let me know how to proceed with the payment.\n\n` +
-          `Thank you!`
+          `Description: ${description}\n\n` +
+          `Please set up a payment link for this donation amount and send it to me.\n\n` +
+          `Thank you for building amazing developer tools!\n\n` +
+          `Best regards`
         );
+        
         window.open(`mailto:support@devmint.site?subject=${subject}&body=${body}`);
+        
+        // Show follow-up message
+        setTimeout(() => {
+          alert(
+            'Thank you for your donation intent!\n\n' +
+            'We\'ve opened your email client with a pre-filled message.\n\n' +
+            'Our team will respond within 24 hours with a secure payment link for your donation.'
+          );
+        }, 1000);
       }
+
+    } catch (error) {
+      console.error('Donation checkout error:', error);
+      throw new Error(`Failed to process donation: ${error}`);
     }
   }
 
@@ -259,6 +286,16 @@ export class PaddleService {
     if (!this.isInitialized) return 'Not initialized';
     if (!window.Paddle) return 'Paddle not loaded';
     return 'Ready';
+  }
+
+  // Get environment info
+  getEnvironmentInfo(): object {
+    return {
+      environment: this.environment,
+      clientToken: this.clientToken.substring(0, 10) + '...',
+      isInitialized: this.isInitialized,
+      paddleAvailable: !!window.Paddle
+    };
   }
 }
 

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { paddle } from '../utils/paddle';
-import { CreditCard, Loader, DollarSign, CheckCircle, AlertCircle } from 'lucide-react';
+import { CreditCard, Loader, DollarSign, CheckCircle, AlertCircle, ExternalLink } from 'lucide-react';
 
 interface PaddleCheckoutProps {
   planType: 'pro' | 'enterprise' | 'donation';
@@ -24,15 +24,15 @@ const PaddleCheckout: React.FC<PaddleCheckoutProps> = ({
   const [initError, setInitError] = useState<string | null>(null);
   const [paddleStatus, setPaddleStatus] = useState<string>('Initializing...');
 
-  // Real Paddle Price IDs from your dashboard
+  // NOTE: You need to create these products in your Paddle dashboard and get the real price IDs
   const priceIds = {
     pro: {
-      monthly: 'pri_01jxkfd08h8gwv7mqxw1ah948b', // Professional $29/month
-      yearly: 'pri_01jxkfsmdcw6tfx7s0wjkdbazr'   // Professional $288/year
+      monthly: 'pri_01jxkfd08h8gwv7mqxw1ah948b', // Replace with your actual Paddle price ID
+      yearly: 'pri_01jxkfsmdcw6tfx7s0wjkdbazr'   // Replace with your actual Paddle price ID
     },
     enterprise: {
-      monthly: 'pri_01jxkfk7whgk1q9pjfxdt4kbg6', // Enterprise $99/month
-      yearly: 'pri_01jxkfxs04a3gxkrwj32kpzk30'   // Enterprise $984/year
+      monthly: 'pri_01jxkfk7whgk1q9pjfxdt4kbg6', // Replace with your actual Paddle price ID
+      yearly: 'pri_01jxkfxs04a3gxkrwj32kpzk30'   // Replace with your actual Paddle price ID
     }
   };
 
@@ -52,11 +52,12 @@ const PaddleCheckout: React.FC<PaddleCheckoutProps> = ({
       setPaddleStatus('Ready for payment');
       
       console.log('Paddle initialization completed successfully');
+      console.log('Environment info:', paddle.getEnvironmentInfo());
     } catch (error) {
       console.error('Failed to initialize Paddle:', error);
       setInitError(`Failed to initialize payment system: ${error}`);
       setPaddleStatus('Failed to load');
-      onError?.('Failed to initialize payment system');
+      onError?.('Failed to initialize payment system. Please refresh the page and try again.');
     } finally {
       setIsLoading(false);
     }
@@ -64,12 +65,12 @@ const PaddleCheckout: React.FC<PaddleCheckoutProps> = ({
 
   const handleCheckout = async () => {
     if (!isInitialized) {
-      onError?.('Payment system not ready. Please refresh the page.');
+      onError?.('Payment system not ready. Please refresh the page and try again.');
       return;
     }
 
     if (!paddle.isReady()) {
-      onError?.('Paddle is not ready. Please try again.');
+      onError?.('Paddle is not ready. Please try again in a moment.');
       return;
     }
 
@@ -80,6 +81,7 @@ const PaddleCheckout: React.FC<PaddleCheckoutProps> = ({
       if (planType === 'donation' && customAmount) {
         console.log(`Starting donation checkout for $${customAmount}`);
         await paddle.createDonationCheckout(customAmount, 'Donation to Devmint');
+        setPaddleStatus('Donation process initiated');
       } else {
         const priceId = priceIds[planType][billingCycle];
         if (!priceId) {
@@ -95,7 +97,8 @@ const PaddleCheckout: React.FC<PaddleCheckoutProps> = ({
           customData: {
             planType,
             billingCycle,
-            userId: userEmail || 'anonymous'
+            userId: userEmail || 'anonymous',
+            timestamp: new Date().toISOString()
           },
           settings: {
             displayMode: 'overlay',
@@ -132,7 +135,9 @@ const PaddleCheckout: React.FC<PaddleCheckoutProps> = ({
             'Priority email support',
             'Advanced analytics dashboard',
             'Custom branding options',
-            'Team collaboration (5 seats)'
+            'Team collaboration (5 seats)',
+            'Webhook notifications',
+            'API rate limit increases'
           ]
         };
       case 'enterprise':
@@ -149,7 +154,8 @@ const PaddleCheckout: React.FC<PaddleCheckoutProps> = ({
             'Dedicated account manager',
             'White-label solution',
             'Unlimited team members',
-            '99.9% SLA guarantee'
+            '99.9% SLA guarantee',
+            'Custom integrations support'
           ]
         };
       case 'donation':
@@ -162,7 +168,8 @@ const PaddleCheckout: React.FC<PaddleCheckoutProps> = ({
             'Help maintain 99.9% uptime',
             'Enable new feature development',
             'Keep free tier available',
-            'Improve documentation & support'
+            'Improve documentation & support',
+            'Support open-source initiatives'
           ]
         };
       default:
@@ -180,13 +187,21 @@ const PaddleCheckout: React.FC<PaddleCheckoutProps> = ({
             <AlertCircle className="w-8 h-8 text-red-600" />
           </div>
           <h3 className="text-xl font-bold text-gray-900 mb-2">Payment System Error</h3>
-          <p className="text-red-600 mb-4">{initError}</p>
-          <button
-            onClick={initializePaddle}
-            className="px-6 py-3 bg-blue-600 text-white rounded-xl font-semibold hover:bg-blue-700 transition-colors"
-          >
-            Retry Initialization
-          </button>
+          <p className="text-red-600 mb-4 text-sm">{initError}</p>
+          <div className="space-y-3">
+            <button
+              onClick={initializePaddle}
+              className="px-6 py-3 bg-blue-600 text-white rounded-xl font-semibold hover:bg-blue-700 transition-colors"
+            >
+              Retry Initialization
+            </button>
+            <div className="text-xs text-gray-500">
+              If the problem persists, please contact{' '}
+              <a href="mailto:support@devmint.site" className="text-blue-600 hover:underline">
+                support@devmint.site
+              </a>
+            </div>
+          </div>
         </div>
       </div>
     );
@@ -248,6 +263,26 @@ const PaddleCheckout: React.FC<PaddleCheckoutProps> = ({
         </div>
       </div>
 
+      {/* Important Notice for Setup */}
+      {planType !== 'donation' && (
+        <div className="mb-4 p-3 bg-yellow-50 border border-yellow-200 rounded-xl">
+          <div className="flex items-start space-x-2">
+            <AlertCircle className="w-4 h-4 text-yellow-600 flex-shrink-0 mt-0.5" />
+            <div className="text-xs text-yellow-800">
+              <strong>Setup Required:</strong> To process payments, you need to create products in your Paddle dashboard with the price IDs referenced in the code. 
+              <a 
+                href="https://vendors.paddle.com/products" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="text-yellow-900 hover:underline ml-1 inline-flex items-center"
+              >
+                Create Products <ExternalLink className="w-3 h-3 ml-1" />
+              </a>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Payment Button */}
       <button
         onClick={handleCheckout}
@@ -298,15 +333,16 @@ const PaddleCheckout: React.FC<PaddleCheckoutProps> = ({
         )}
       </div>
 
-      {/* Debug Info (remove in production) */}
+      {/* Debug Info (development only) */}
       {process.env.NODE_ENV === 'development' && (
-        <div className="mt-4 p-3 bg-yellow-50 rounded-xl">
-          <div className="text-xs text-yellow-800">
+        <div className="mt-4 p-3 bg-gray-100 rounded-xl">
+          <div className="text-xs text-gray-700">
             <strong>Debug Info:</strong><br />
             Paddle Status: {paddle.getStatus()}<br />
             Plan: {planType} ({billingCycle})<br />
             {planType !== 'donation' && `Price ID: ${priceIds[planType][billingCycle]}`}<br />
-            {planType === 'donation' && `Amount: $${customAmount?.toFixed(2)}`}
+            {planType === 'donation' && `Amount: $${customAmount?.toFixed(2)}`}<br />
+            Environment: {JSON.stringify(paddle.getEnvironmentInfo(), null, 2)}
           </div>
         </div>
       )}
