@@ -1,1 +1,1 @@
-# DevMint
+# devmint-project
