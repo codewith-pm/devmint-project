@@ -188,7 +188,14 @@ const PricingPage: React.FC = () => {
     } else if (planName === 'Enterprise') {
       window.location.href = '/support';
     } else {
-      setShowCheckout({ plan: planName.toLowerCase(), billing: billingCycle });
+      // Map plan names to the expected planType values for PaddleCheckout
+      const planTypeMap: { [key: string]: string } = {
+        'Professional': 'pro',
+        'Enterprise': 'enterprise'
+      };
+      
+      const planType = planTypeMap[planName] || planName.toLowerCase();
+      setShowCheckout({ plan: planType, billing: billingCycle });
     }
   };
 
