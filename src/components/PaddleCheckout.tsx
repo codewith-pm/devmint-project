@@ -24,15 +24,16 @@ const PaddleCheckout: React.FC<PaddleCheckoutProps> = ({
   const [initError, setInitError] = useState<string | null>(null);
   const [paddleStatus, setPaddleStatus] = useState<string>('Initializing...');
 
-  // NOTE: You need to create these products in your Paddle dashboard and get the real price IDs
+  // IMPORTANT: You need to create these products in your Paddle dashboard and get the real price IDs
+  // The transaction ID you provided (txn_01jxqzf2spf3mt53z7kvg9yset) is NOT a price ID
   const priceIds = {
     pro: {
-      monthly: 'pri_01jxkfd08h8gwv7mqxw1ah948b', // Replace with your actual Paddle price ID
-      yearly: 'pri_01jxkfsmdcw6tfx7s0wjkdbazr'   // Replace with your actual Paddle price ID
+      monthly: 'pri_01jxkfd08h8gwv7mqxw1ah948b', // Replace with your actual Paddle price ID for Pro Monthly
+      yearly: 'pri_01jxkfsmdcw6tfx7s0wjkdbazr'   // Replace with your actual Paddle price ID for Pro Yearly
     },
     enterprise: {
-      monthly: 'pri_01jxkfk7whgk1q9pjfxdt4kbg6', // Replace with your actual Paddle price ID
-      yearly: 'pri_01jxkfxs04a3gxkrwj32kpzk30'   // Replace with your actual Paddle price ID
+      monthly: 'pri_01jxkfk7whgk1q9pjfxdt4kbg6', // Replace with your actual Paddle price ID for Enterprise Monthly
+      yearly: 'pri_01jxkfxs04a3gxkrwj32kpzk30'   // Replace with your actual Paddle price ID for Enterprise Yearly
     }
   };
 
@@ -85,7 +86,7 @@ const PaddleCheckout: React.FC<PaddleCheckoutProps> = ({
       } else {
         const priceId = priceIds[planType][billingCycle];
         if (!priceId) {
-          throw new Error('Invalid plan type or billing cycle');
+          throw new Error(`Invalid plan configuration: ${planType} ${billingCycle}`);
         }
 
         console.log(`Starting subscription checkout for ${planType} ${billingCycle} plan`);
@@ -263,25 +264,24 @@ const PaddleCheckout: React.FC<PaddleCheckoutProps> = ({
         </div>
       </div>
 
-      {/* Important Notice for Setup */}
-      {planType !== 'donation' && (
-        <div className="mb-4 p-3 bg-yellow-50 border border-yellow-200 rounded-xl">
-          <div className="flex items-start space-x-2">
-            <AlertCircle className="w-4 h-4 text-yellow-600 flex-shrink-0 mt-0.5" />
-            <div className="text-xs text-yellow-800">
-              <strong>Setup Required:</strong> To process payments, you need to create products in your Paddle dashboard with the price IDs referenced in the code. 
-              <a 
-                href="https://vendors.paddle.com/products" 
-                target="_blank" 
-                rel="noopener noreferrer"
-                className="text-yellow-900 hover:underline ml-1 inline-flex items-center"
-              >
-                Create Products <ExternalLink className="w-3 h-3 ml-1" />
-              </a>
+      {/* Setup Instructions */}
+      <div className="mb-4 p-4 bg-yellow-50 border border-yellow-200 rounded-xl">
+        <div className="flex items-start space-x-2">
+          <AlertCircle className="w-5 h-5 text-yellow-600 flex-shrink-0 mt-0.5" />
+          <div className="text-sm text-yellow-800">
+            <strong>Setup Required:</strong> To process payments, you need to:
+            <ol className="mt-2 ml-4 list-decimal space-y-1">
+              <li>Go to your <a href="https://vendors.paddle.com/products" target="_blank" rel="noopener noreferrer" className="text-yellow-900 hover:underline font-medium">Paddle Dashboard</a></li>
+              <li>Create products for each plan (Pro Monthly, Pro Yearly, Enterprise Monthly, Enterprise Yearly)</li>
+              <li>Copy the price IDs (they start with "pri_") from each product</li>
+              <li>Replace the placeholder price IDs in the code with your real ones</li>
+            </ol>
+            <div className="mt-2 p-2 bg-yellow-100 rounded text-xs font-mono">
+              Current Pro Monthly ID: {priceIds.pro.monthly}
             </div>
           </div>
         </div>
-      )}
+      </div>
 
       {/* Payment Button */}
       <button
