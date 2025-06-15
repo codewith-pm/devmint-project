@@ -205,7 +205,7 @@ const PricingPage: React.FC = () => {
         <div className="max-w-2xl mx-auto">
           <div className="text-center mb-8">
             <h1 className="text-3xl font-bold text-gray-900 mb-4">Complete Your Subscription</h1>
-            <p className="text-gray-600">Secure payment processing by Paddle.com</p>
+            <p className="text-gray-600">Secure payment processing by Devmint</p>
           </div>
           
           <PaddleCheckout
@@ -213,8 +213,8 @@ const PricingPage: React.FC = () => {
             billingCycle={showCheckout.billing}
             userEmail={user?.email}
             onSuccess={() => {
-              alert('Subscription successful! Welcome to Devmint!');
-              window.location.href = '/dashboard?payment=success';
+              // alert('Subscription successful! Welcome to Devmint!');
+              // window.location.href = '/dashboard?payment=success';
             }}
             onError={(error) => {
               alert(`Subscription failed: ${error}`);
