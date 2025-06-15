@@ -55,7 +55,7 @@ export class PaddleService {
       const existingScript = document.querySelector('script[src*="paddle"]');
       if (existingScript) {
         existingScript.remove();
-        console.log('Removed existing Paddle script');
+        // console.log('Removed existing Paddle script');
       }
 
       // Load Paddle.js v2 script
@@ -75,33 +75,33 @@ export class PaddleService {
             });
             
             this.isInitialized = true;
-            console.log('✅ Paddle v2 initialized successfully');
-            console.log('🔑 Client Token:', this.clientToken.substring(0, 15) + '...');
-            console.log('🏪 Seller ID:', this.sellerId);
-            console.log('🌍 Environment: Production (Live)');
+            // console.log('✅ Paddle v2 initialized successfully');
+            // console.log('🔑 Client Token:', this.clientToken.substring(0, 15) + '...');
+            // console.log('🏪 Seller ID:', this.sellerId);
+            // console.log('🌍 Environment: Production (Live)');
             resolve();
           } else {
-            throw new Error('Paddle object not available after script load');
+            throw new Error('Payment object not available after script load');
           }
         } catch (error) {
-          console.error('❌ Paddle initialization error:', error);
+          console.error('❌ Payment initialization error:', error);
           this.isInitialized = false;
           reject(error);
         }
       };
 
       script.onerror = (error) => {
-        console.error('❌ Failed to load Paddle.js script:', error);
-        reject(new Error('Failed to load Paddle.js script'));
+        console.error('❌ Failed to load payment script:', error);
+        reject(new Error('Failed to load payment script'));
       };
 
       document.head.appendChild(script);
-      console.log('📦 Paddle script added to document head');
+      // console.log('📦 Paddle script added to document head');
     });
   }
 
   private handlePaddleEvent(data: any) {
-    console.log('🎯 Paddle Event Received:', data);
+    // console.log('🎯 Paddle Event Received:', data);
     
     try {
       switch (data.name) {
@@ -115,16 +115,16 @@ export class PaddleService {
           this.handleCheckoutError(data);
           break;
         case 'checkout.loaded':
-          console.log('✅ Checkout loaded successfully');
+          // console.log('✅ Checkout loaded successfully');
           break;
         case 'checkout.customer.created':
-          console.log('👤 Customer created:', data);
+          // console.log('👤 Customer created:', data);
           break;
         case 'checkout.payment.initiated':
-          console.log('💳 Payment initiated:', data);
+          // console.log('💳 Payment initiated:', data);
           break;
         case 'checkout.payment.completed':
-          console.log('✅ Payment completed:', data);
+          // console.log('✅ Payment completed:', data);
           break;
         default:
           console.log('ℹ️ Unhandled Paddle event:', data.name, data);
@@ -143,9 +143,9 @@ export class PaddleService {
       const transactionId = transactionData?.transaction?.id || transactionData?.id;
       const customerEmail = transactionData?.customer?.email;
       
-      console.log('📄 Transaction ID:', transactionId);
-      console.log('📧 Customer Email:', customerEmail);
-      console.log('📊 Custom Data:', customData);
+      // console.log('📄 Transaction ID:', transactionId);
+      // console.log('📧 Customer Email:', customerEmail);
+      // console.log('📊 Custom Data:', customData);
       
       if (customData?.planType === 'donation') {
         this.showSuccessMessage(
@@ -336,9 +336,9 @@ export class PaddleService {
       }
 
       // Open Paddle v2 checkout
-      console.log('🎯 Opening Paddle checkout...');
+      // console.log('🎯 Opening Paddle checkout...');
       window.Paddle.Checkout.open(checkoutOptions);
-      console.log('✅ Paddle checkout opened successfully');
+      // console.log('✅ Paddle checkout opened successfully');
       
     } catch (error) {
       console.error('❌ Error opening checkout:', error);
@@ -364,7 +364,7 @@ export class PaddleService {
       const donationProductId = 'pro_01jxj37mv7xyy7kmkewmta6dze'; // Testing invoice product ($1)
       const quantity = Math.round(amount); // Round to nearest dollar
       
-      console.log(`💰 Using product ${donationProductId} with quantity ${quantity} for $${amount} donation`);
+      // console.log(`💰 Using product ${donationProductId} with quantity ${quantity} for $${amount} donation`);
       
       await this.openCheckout({
         items: [{
