@@ -320,10 +320,8 @@ const PaddleCheckout: React.FC<PaddleCheckoutProps> = ({
         <div className="flex items-start space-x-2">
           <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
           <div className="text-sm text-green-800">
-            <strong>✅ Live Payment Processing:</strong> This checkout uses live Paddle.com credentials.
+            <strong>✅ Live Payment Processing:</strong> This checkout uses secure credentials.
             <div className="mt-2 text-xs space-y-1">
-              <div>🌍 Environment: Production</div>
-              <div>🏪 Seller ID: 233505</div>
               <div>💳 Real payments will be processed</div>
               <div>🔒 Secure SSL encryption</div>
             </div>
@@ -358,7 +356,7 @@ const PaddleCheckout: React.FC<PaddleCheckoutProps> = ({
         </button>
 
         {/* Test Button (for development/testing) */}
-        {process.env.NODE_ENV === 'development' && isInitialized && (
+{/*         {process.env.NODE_ENV === 'development' && isInitialized && (
           <button
             onClick={handleTestCheckout}
             disabled={isLoading}
@@ -367,15 +365,15 @@ const PaddleCheckout: React.FC<PaddleCheckoutProps> = ({
             <TestTube className="w-4 h-4 mr-2" />
             Test Checkout
           </button>
-        )}
-      </div>
+        )}*/
+      </div> }
 
       {/* Payment Info */}
       <div className="mt-4 text-center">
         <div className="text-xs text-gray-500 mb-2">
           🔒 Secure payment processing by{' '}
-          <a href="https://paddle.com" className="text-blue-600 hover:underline" target="_blank" rel="noopener noreferrer">
-            Paddle.com
+          <a href="/" className="text-blue-600 hover:underline" target="_blank" rel="noopener noreferrer">
+           devmint.site
           </a>
         </div>
         
@@ -397,7 +395,7 @@ const PaddleCheckout: React.FC<PaddleCheckoutProps> = ({
       </div>
 
       {/* Debug Info (development only) */}
-      {process.env.NODE_ENV === 'development' && (
+{/*       {process.env.NODE_ENV === 'development' && (
         <div className="mt-4 p-3 bg-gray-100 rounded-xl">
           <div className="text-xs text-gray-700">
             <strong>🔧 Debug Info:</strong><br />
@@ -408,7 +406,7 @@ const PaddleCheckout: React.FC<PaddleCheckoutProps> = ({
             Environment: {JSON.stringify(paddle.getEnvironmentInfo(), null, 2)}
           </div>
         </div>
-      )}
+      )} */}
     </div>
   );
 };
