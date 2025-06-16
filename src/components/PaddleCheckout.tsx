@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { paddle } from '../utils/paddle';
-import { CreditCard, Loader, DollarSign, CheckCircle, AlertCircle, RefreshCw, TestTube } from 'lucide-react';
+import { CreditCard, Loader, DollarSign, CheckCircle, AlertCircle, RefreshCw } from 'lucide-react';
 
 interface PaddleCheckoutProps {
   planType: 'pro' | 'enterprise' | 'donation';
@@ -27,15 +27,15 @@ const PaddleCheckout: React.FC<PaddleCheckoutProps> = ({
   // Your actual Paddle product price IDs
   const priceIds = {
     pro: {
-      monthly: 'pri_01jxkfd08h8gwv7mqxw1ah948b', // Professional Plan Monthly ($29)
-      yearly: 'pri_01jxkfsmdcw6tfx7s0wjkdbazr'   // Professional Plan Yearly ($288)
+      monthly: 'pri_01jxkfd08h8gwv7mqxw1ah948b',
+      yearly: 'pri_01jxkfsmdcw6tfx7s0wjkdbazr'
     },
     enterprise: {
-      monthly: 'pri_01jxkfk7whgk1q9pjfxdt4kbg6', // Enterprise Plan Monthly ($99)
-      yearly: 'pri_01jxkfxs04a3gxkrwj32kpzk30'   // Enterprise Plan Yearly ($984)
+      monthly: 'pri_01jxkfk7whgk1q9pjfxdt4kbg6',
+      yearly: 'pri_01jxkfxs04a3gxkrwj32kpzk30'
     },
     donation: {
-      productId: 'pro_01jxj37mv7xyy7kmkewmta6dze' // Testing invoice product for donations ($1 base)
+      productId: 'pro_01jxj37mv7xyy7kmkewmta6dze'
     }
   };
 
@@ -46,19 +46,15 @@ const PaddleCheckout: React.FC<PaddleCheckoutProps> = ({
   const initializePaddle = async () => {
     try {
       setIsLoading(true);
-      setPaddleStatus('Loading Paddle.js...');
+      setPaddleStatus('Loading payment system...');
       setInitError(null);
       
-      console.log('🚀 Starting Paddle initialization...');
       await paddle.initialize();
       
       setIsInitialized(true);
       setPaddleStatus('Ready for payment');
       
-      console.log('✅ Paddle initialization completed successfully');
-      console.log('📊 Environment info:', paddle.getEnvironmentInfo());
     } catch (error) {
-      console.error('❌ Failed to initialize Paddle:', error);
       setInitError(`Failed to initialize payment system: ${error}`);
       setPaddleStatus('Failed to load');
       onError?.('Failed to initialize payment system. Please refresh the page and try again.');
@@ -68,7 +64,6 @@ const PaddleCheckout: React.FC<PaddleCheckoutProps> = ({
   };
 
   const handleRetryInitialization = async () => {
-    console.log('🔄 Retrying Paddle initialization...');
     setInitError(null);
     setIsInitialized(false);
     
@@ -79,31 +74,8 @@ const PaddleCheckout: React.FC<PaddleCheckoutProps> = ({
       setIsInitialized(true);
       setPaddleStatus('Ready for payment');
     } catch (error) {
-      console.error('❌ Retry initialization failed:', error);
       setInitError(`Retry failed: ${error}`);
       setPaddleStatus('Failed to load');
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const handleTestCheckout = async () => {
-    console.log('🧪 Testing checkout functionality...');
-    
-    if (!isInitialized) {
-      onError?.('Payment system not ready. Please wait for initialization to complete.');
-      return;
-    }
-
-    try {
-      setIsLoading(true);
-      setPaddleStatus('Opening test checkout...');
-      await paddle.testCheckout();
-      setPaddleStatus('Test checkout opened');
-    } catch (error) {
-      console.error('❌ Test checkout failed:', error);
-      onError?.(`Test checkout failed: ${error}`);
-      setPaddleStatus('Test failed');
     } finally {
       setIsLoading(false);
     }
@@ -116,7 +88,7 @@ const PaddleCheckout: React.FC<PaddleCheckoutProps> = ({
     }
 
     if (!paddle.isReady()) {
-      onError?.('Paddle is not ready. Please try again in a moment.');
+      onError?.('Payment system is not ready. Please try again in a moment.');
       return;
     }
 
@@ -125,7 +97,6 @@ const PaddleCheckout: React.FC<PaddleCheckoutProps> = ({
 
     try {
       if (planType === 'donation' && customAmount) {
-        console.log(`💝 Starting donation checkout for $${customAmount}`);
         await paddle.createDonationCheckout(customAmount, 'Donation to Devmint');
         setPaddleStatus('Donation checkout opened');
       } else {
@@ -133,9 +104,6 @@ const PaddleCheckout: React.FC<PaddleCheckoutProps> = ({
         if (!priceId) {
           throw new Error(`Invalid plan configuration: ${planType} ${billingCycle}`);
         }
-
-        console.log(`💳 Starting subscription checkout for ${planType} ${billingCycle} plan`);
-        console.log(`🏷️ Using price ID: ${priceId}`);
 
         await paddle.openCheckout({
           items: [{ priceId, quantity: 1 }],
@@ -162,7 +130,6 @@ const PaddleCheckout: React.FC<PaddleCheckoutProps> = ({
       onSuccess?.();
       
     } catch (error) {
-      console.error('❌ Checkout error:', error);
       setPaddleStatus('Checkout failed');
       onError?.(`Failed to start checkout: ${error}`);
     } finally {
@@ -283,7 +250,7 @@ const PaddleCheckout: React.FC<PaddleCheckoutProps> = ({
         
         {billingCycle === 'yearly' && planType !== 'donation' && (
           <div className="mt-3 inline-flex items-center px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm font-medium">
-            🎉 Best Value - Save {planDetails.savings}
+            Best Value - Save {planDetails.savings}
           </div>
         )}
       </div>
@@ -320,10 +287,10 @@ const PaddleCheckout: React.FC<PaddleCheckoutProps> = ({
         <div className="flex items-start space-x-2">
           <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
           <div className="text-sm text-green-800">
-            <strong>✅ Live Payment Processing:</strong> This checkout uses secure credentials.
+            <strong>Live Payment Processing:</strong> This checkout uses secure credentials.
             <div className="mt-2 text-xs space-y-1">
-              <div>💳 Real payments will be processed</div>
-              <div>🔒 Secure SSL encryption</div>
+              <div>Real payments will be processed</div>
+              <div>Secure SSL encryption</div>
             </div>
           </div>
         </div>
@@ -354,59 +321,33 @@ const PaddleCheckout: React.FC<PaddleCheckoutProps> = ({
             </>
           )}
         </button>
-
-        {/* Test Button (for development/testing) */}
-{/*         {process.env.NODE_ENV === 'development' && isInitialized && (
-          <button
-            onClick={handleTestCheckout}
-            disabled={isLoading}
-            className="w-full py-2 px-4 border border-blue-600 text-blue-600 rounded-xl font-medium hover:bg-blue-50 transition-colors disabled:opacity-50 flex items-center justify-center"
-          >
-            <TestTube className="w-4 h-4 mr-2" />
-            Test Checkout
-          </button>
-        )}*/
-      </div> }
+      </div>
 
       {/* Payment Info */}
       <div className="mt-4 text-center">
         <div className="text-xs text-gray-500 mb-2">
-          🔒 Secure payment processing by{' '}
-          <a href="/" className="text-blue-600 hover:underline" target="_blank" rel="noopener noreferrer">
-           devmint.site
+          Secure payment processing by{' '}
+          <a href="https://paddle.com" className="text-blue-600 hover:underline" target="_blank" rel="noopener noreferrer">
+            Paddle.com
           </a>
         </div>
         
         <div className="text-xs text-gray-500 mb-2">
-          💳 Accepts: Visa, Mastercard, Amex, PayPal, Apple Pay, Google Pay
+          Accepts: Visa, Mastercard, Amex, PayPal, Apple Pay, Google Pay
         </div>
         
         {planType !== 'donation' && (
           <div className="text-xs text-gray-500">
-            ✅ Cancel anytime • 30-day money-back guarantee
+            Cancel anytime • 30-day money-back guarantee
           </div>
         )}
         
         {planType === 'donation' && (
           <div className="text-xs text-gray-500">
-            ❤️ Thank you for supporting open-source development
+            Thank you for supporting open-source development
           </div>
         )}
       </div>
-
-      {/* Debug Info (development only) */}
-{/*       {process.env.NODE_ENV === 'development' && (
-        <div className="mt-4 p-3 bg-gray-100 rounded-xl">
-          <div className="text-xs text-gray-700">
-            <strong>🔧 Debug Info:</strong><br />
-            Paddle Status: {paddle.getStatus()}<br />
-            Plan: {planType} ({billingCycle})<br />
-            {planType !== 'donation' && `Price ID: ${priceIds[planType][billingCycle]}`}<br />
-            {planType === 'donation' && `Amount: $${customAmount?.toFixed(2)} (Product: ${priceIds.donation.productId})`}<br />
-            Environment: {JSON.stringify(paddle.getEnvironmentInfo(), null, 2)}
-          </div>
-        </div>
-      )} */}
     </div>
   );
 };

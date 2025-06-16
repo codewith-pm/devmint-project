@@ -179,14 +179,18 @@ const PricingPage: React.FC = () => {
   };
 
   const handlePlanSelect = (planName: string) => {
+    // Prevent automatic redirects - wait for user action
     if (planName === 'Starter') {
       if (user) {
-        window.location.href = '/dashboard';
+        // Don't auto-redirect, let user click
+        return;
       } else {
-        window.location.href = '/signup';
+        // Don't auto-redirect, let user click
+        return;
       }
     } else if (planName === 'Enterprise') {
-      window.location.href = '/support';
+      // Don't auto-redirect, let user click
+      return;
     } else {
       // Map plan names to the expected planType values for PaddleCheckout
       const planTypeMap: { [key: string]: string } = {
@@ -197,6 +201,18 @@ const PricingPage: React.FC = () => {
       const planType = planTypeMap[planName] || planName.toLowerCase();
       setShowCheckout({ plan: planType, billing: billingCycle });
     }
+  };
+
+  const handleStarterClick = () => {
+    if (user) {
+      window.location.href = '/dashboard';
+    } else {
+      window.location.href = '/signup';
+    }
+  };
+
+  const handleEnterpriseClick = () => {
+    window.location.href = '/support';
   };
 
   if (showCheckout) {
@@ -213,8 +229,7 @@ const PricingPage: React.FC = () => {
             billingCycle={showCheckout.billing}
             userEmail={user?.email}
             onSuccess={() => {
-              // alert('Subscription successful! Welcome to Devmint!');
-              // window.location.href = '/dashboard?payment=success';
+              // Don't auto-redirect, let Paddle handle it
             }}
             onError={(error) => {
               alert(`Subscription failed: ${error}`);
@@ -402,7 +417,15 @@ const PricingPage: React.FC = () => {
 
                   {/* CTA Button */}
                   <button
-                    onClick={() => handlePlanSelect(plan.name)}
+                    onClick={() => {
+                      if (plan.name === 'Starter') {
+                        handleStarterClick();
+                      } else if (plan.name === 'Enterprise') {
+                        handleEnterpriseClick();
+                      } else {
+                        handlePlanSelect(plan.name);
+                      }
+                    }}
                     className={`w-full py-4 px-6 rounded-xl font-semibold text-center transition-all duration-200 ${
                       plan.buttonStyle === 'primary'
                         ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white hover:from-blue-700 hover:to-purple-700 transform hover:scale-105 shadow-lg'

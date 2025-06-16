@@ -16,6 +16,16 @@ const PrivacyPage = lazy(() => import('./pages/PrivacyPage'));
 const RefundPage = lazy(() => import('./pages/RefundPage'));
 const SupportPage = lazy(() => import('./pages/SupportPage'));
 
+// Loading component
+const LoadingSpinner = () => (
+  <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
+    <div className="text-center">
+      <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+      <p className="text-gray-600">Loading...</p>
+    </div>
+  </div>
+);
+
 function App() {
   return (
     <AuthProvider>
@@ -23,7 +33,7 @@ function App() {
         <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
           <Header />
           <main className="pt-16">
-            <Suspense fallback={<div>Loading...</div>}>
+            <Suspense fallback={<LoadingSpinner />}>
               <Routes>
                 <Route path="/" element={<HomePage />} />
                 <Route path="/login" element={<LoginPage />} />
