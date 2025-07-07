@@ -1,0 +1,7 @@
+# Ignore all files in this directory except this .gitignore and README.md
+*
+!.gitignore
+!README.md
+
+# This prevents accidentally committing sensitive data
+# Even though this is educational, it's good practice

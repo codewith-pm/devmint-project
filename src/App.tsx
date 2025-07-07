@@ -15,6 +15,7 @@ const TermsPage = lazy(() => import('./pages/TermsPage'));
 const PrivacyPage = lazy(() => import('./pages/PrivacyPage'));
 const RefundPage = lazy(() => import('./pages/RefundPage'));
 const SupportPage = lazy(() => import('./pages/SupportPage'));
+const PaymentEducationPage = lazy(() => import('./pages/PaymentEducationPage'));
 
 // Loading component
 const LoadingSpinner = () => (
@@ -44,6 +45,7 @@ function App() {
                 <Route path="/privacy" element={<PrivacyPage />} />
                 <Route path="/refund" element={<RefundPage />} />
                 <Route path="/support" element={<SupportPage />} />
+                <Route path="/payment-education" element={<PaymentEducationPage />} />
                 <Route path="/dashboard/*" element={
                   <ProtectedRoute>
                     <Dashboard />
