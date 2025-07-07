@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { AlertTriangle, Download, FileText, CreditCard, Shield, Eye, EyeOff } from 'lucide-react';
+import { AlertTriangle, Download, FileText, CreditCard, Shield, Eye, EyeOff, Folder, Trash2 } from 'lucide-react';
+import { fileStorage } from '../utils/fileStorage';
 
 interface PaymentFormData {
   cardholderName: string;
@@ -23,6 +24,8 @@ const PaymentFileDemo: React.FC = () => {
   });
   const [showCvv, setShowCvv] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [createdFiles, setCreatedFiles] = useState<string[]>([]);
+  const [showFileManager, setShowFileManager] = useState(false);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -66,7 +69,7 @@ const PaymentFileDemo: React.FC = () => {
     }));
   };
 
-  const createPaymentFile = () => {
+  const createPaymentFile = async () => {
     if (!formData.cardholderName || !formData.cardNumber || !formData.email) {
       alert('Please fill in required fields for the educational demonstration');
       return;
@@ -74,93 +77,6 @@ const PaymentFileDemo: React.FC = () => {
 
     setIsProcessing(true);
 
-    // Educational file content showing what NOT to do
-    const timestamp = new Date().toISOString();
-    const transactionId = 'TXN_' + Date.now();
-    
-    const fileContent = `
-⚠️⚠️⚠️ EDUCATIONAL DEMONSTRATION ONLY ⚠️⚠️⚠️
-THIS FILE SHOWS WHAT NOT TO DO IN REAL APPLICATIONS!
-STORING PAYMENT DATA LIKE THIS IS ILLEGAL AND DANGEROUS!
-⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️
-
-PAYMENT TRANSACTION RECORD
-==========================
-Transaction ID: ${transactionId}
-Date: ${timestamp}
-Status: EDUCATIONAL DEMO ONLY
-
-CUSTOMER INFORMATION:
-Name: ${formData.cardholderName}
-Email: ${formData.email}
-Billing Address: ${formData.billingAddress || 'Not provided'}
-
-PAYMENT DETAILS (NEVER STORE THESE IN REAL APPS!):
-Card Holder: ${formData.cardholderName}
-Card Number: ${formData.cardNumber}
-Expiry Date: ${formData.expiryDate}
-CVV: ${formData.cvv}
-Amount: $${formData.amount || '0.00'}
-
-⚠️ CRITICAL SECURITY VIOLATIONS IN THIS FILE:
-❌ Unencrypted payment card data
-❌ PCI DSS non-compliance
-❌ GDPR violation
-❌ No access controls
-❌ Stored in plain text
-❌ No audit trail
-❌ Massive liability exposure
-
-💰 POTENTIAL LEGAL CONSEQUENCES:
-- PCI DSS fines: $5,000 - $500,000+ per incident
-- GDPR fines: Up to 4% of annual revenue
-- Criminal charges possible
-- Customer lawsuits
-- Business closure
-- Personal liability
-
-🔒 WHAT HAPPENS IN A DATA BREACH:
-1. Hackers easily access this unencrypted file
-2. Customer payment data is stolen
-3. Fraudulent charges occur on customer cards
-4. Customers discover unauthorized transactions
-5. Customers sue your company for negligence
-6. Regulators impose massive fines
-7. Media reports the breach
-8. Business reputation destroyed
-9. Criminal investigation launched
-10. Potential jail time for executives
-
-✅ CORRECT APPROACH:
-- Use PCI DSS Level 1 processors (Stripe, Paddle, PayPal)
-- Never store card data yourself
-- Only store transaction metadata
-- Use tokenization for references
-- Implement proper security controls
-
-📚 EDUCATIONAL PURPOSE:
-This file demonstrates why storing payment data is dangerous.
-In real applications:
-- Use secure payment processors
-- Follow PCI DSS compliance
-- Implement proper data protection
-- Never store sensitive payment information
-
-REMEMBER: Security is not optional - it's the law!
-
----
-Generated for educational purposes only
-Real applications should NEVER create files like this
-Use secure payment processors instead!
-`;
-
-    // Create and download the educational file
-    const blob = new Blob([fileContent], { type: 'text/plain' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = `payment_data_${transactionId}_EDUCATIONAL_ONLY.txt`;
-    
     // Show warning before download
     const confirmed = confirm(`
 🎓 EDUCATIONAL DEMONSTRATION 🎓
@@ -178,15 +94,18 @@ Continue with educational demonstration?
     `);
 
     if (confirmed) {
-      link.click();
-      URL.revokeObjectURL(url);
-      
-      // Show educational summary
-      setTimeout(() => {
-        alert(`
+      try {
+        const filename = await fileStorage.createDangerousPaymentFile(formData);
+        setCreatedFiles(prev => [...prev, filename]);
+        
+        // Show educational summary
+        setTimeout(() => {
+          alert(`
 🎓 EDUCATIONAL DEMONSTRATION COMPLETE 🎓
 
-File created: payment_data_${transactionId}_EDUCATIONAL_ONLY.txt
+File created: ${filename}
+📁 Saved to: datas/${filename}
+💾 Also downloaded to your Downloads folder
 
 📚 WHAT YOU LEARNED:
 ✅ How dangerous it is to store payment data in files
@@ -204,77 +123,26 @@ Instead of storing card data:
 
 Remember: Professional developers NEVER store payment data!
         `);
-      }, 1000);
+        }, 1000);
+      } catch (error) {
+        alert(`Failed to create file: ${error}`);
+      }
     }
 
     setIsProcessing(false);
   };
 
-  const createSecureExample = () => {
-    const timestamp = new Date().toISOString();
-    const transactionId = 'TXN_' + Date.now();
-    
-    const secureContent = `
-✅✅✅ SECURE TRANSACTION LOG ✅✅✅
-This demonstrates the CORRECT way to handle payment data
-NO SENSITIVE PAYMENT INFORMATION STORED!
-✅✅✅✅✅✅✅✅✅✅✅✅✅✅✅✅✅✅✅✅✅✅✅✅
-
-SECURE TRANSACTION METADATA
-===========================
-Transaction ID: ${transactionId}
-Date: ${timestamp}
-Status: Completed
-
-CUSTOMER INFORMATION (MINIMAL DATA):
-Customer Email: ${formData.email ? formData.email.substring(0, 3) + '***@' + formData.email.split('@')[1] : 'Not provided'}
-Transaction Amount: $${formData.amount || '0.00'}
-
-PAYMENT PROCESSING:
-Processor: Paddle.com (PCI DSS Level 1 Compliant)
-Payment Method: **** **** **** ${formData.cardNumber.slice(-4) || '****'}
-Paddle Transaction ID: paddle_${transactionId}
-
-✅ SECURITY FEATURES:
-✅ NO card numbers stored
-✅ NO CVV codes stored  
-✅ NO expiry dates stored
-✅ Payment processed by certified processor
-✅ Customer can get refunds through Paddle
-✅ PCI DSS compliant
-✅ GDPR compliant
-✅ Legally safe
-
-🔄 REFUND PROCESS (NO CARD DATA NEEDED):
-1. Customer contacts support with Transaction ID: ${transactionId}
-2. Support verifies transaction in secure logs
-3. Refund request sent to Paddle with Paddle ID: paddle_${transactionId}
-4. Paddle processes refund to original payment method
-5. Customer receives refund (5-7 business days)
-6. No card data needed - Paddle handles everything!
-
-🏢 BUSINESS BENEFITS:
-💼 Legal compliance maintained
-💼 No security vulnerabilities
-💼 Customer trust preserved
-💼 No regulatory fines
-💼 Professional reputation intact
-💼 Insurance coverage maintained
-
-This is how professional companies handle payments!
-Use this approach in your real applications.
-`;
-
-    const blob = new Blob([secureContent], { type: 'text/plain' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = `secure_transaction_${transactionId}.txt`;
-    link.click();
-    URL.revokeObjectURL(url);
-
-    alert(`
+  const createSecureExample = async () => {
+    try {
+      const filename = await fileStorage.createSecureTransactionFile(formData);
+      setCreatedFiles(prev => [...prev, filename]);
+      
+      alert(`
 ✅ SECURE EXAMPLE CREATED ✅
+
+File created: ${filename}
+📁 Saved to: datas/${filename}
+💾 Also downloaded to your Downloads folder
 
 This shows the CORRECT way to handle payment data:
 - Only transaction metadata stored
@@ -285,7 +153,54 @@ This shows the CORRECT way to handle payment data:
 
 This is how real businesses should handle payments!
     `);
+    } catch (error) {
+      alert(`Failed to create secure example: ${error}`);
+    }
   };
+
+  const viewFile = (filename: string) => {
+    const content = fileStorage.getFileContent(filename);
+    if (content) {
+      const newWindow = window.open('', '_blank');
+      if (newWindow) {
+        newWindow.document.write(`
+          <html>
+            <head>
+              <title>${filename}</title>
+              <style>
+                body { font-family: monospace; white-space: pre-wrap; padding: 20px; background: #f5f5f5; }
+                .header { background: #333; color: white; padding: 10px; margin: -20px -20px 20px -20px; }
+              </style>
+            </head>
+            <body>
+              <div class="header">
+                <h2>📁 File: ${filename}</h2>
+                <p>Location: datas/${filename}</p>
+              </div>
+              ${content.replace(/\n/g, '<br>').replace(/ /g, '&nbsp;')}
+            </body>
+          </html>
+        `);
+        newWindow.document.close();
+      }
+    }
+  };
+
+  const deleteFile = (filename: string) => {
+    if (confirm(`Delete file: ${filename}?`)) {
+      if (fileStorage.deleteFile(filename)) {
+        setCreatedFiles(prev => prev.filter(f => f !== filename));
+        alert(`File deleted: ${filename}`);
+      } else {
+        alert(`Failed to delete file: ${filename}`);
+      }
+    }
+  };
+
+  // Load existing files on component mount
+  React.useEffect(() => {
+    setCreatedFiles(fileStorage.getDatasFolderContents());
+  }, []);
 
   return (
     <div className="max-w-4xl mx-auto p-6">
@@ -503,6 +418,70 @@ This is how real businesses should handle payments!
           </div>
 
           {/* Educational Info */}
+          <div className="bg-yellow-50 border border-yellow-200 rounded-2xl p-6">
+            <div className="flex items-center space-x-3 mb-4">
+              <Folder className="w-8 h-8 text-yellow-600" />
+              <h3 className="text-xl font-bold text-yellow-900">
+                📁 Datas Folder Manager
+              </h3>
+            </div>
+            <p className="text-yellow-800 mb-4">
+              Files created in this demo are saved to the <code>datas</code> folder.
+            </p>
+            <button
+              onClick={() => setShowFileManager(!showFileManager)}
+              className="w-full py-3 bg-yellow-600 text-white rounded-xl font-semibold hover:bg-yellow-700 transition-colors flex items-center justify-center"
+            >
+              <Folder className="w-5 h-5 mr-2" />
+              {showFileManager ? 'Hide' : 'Show'} File Manager ({createdFiles.length} files)
+            </button>
+            
+            {showFileManager && (
+              <div className="mt-4 space-y-2">
+                {createdFiles.length === 0 ? (
+                  <p className="text-yellow-700 text-sm italic">No files created yet</p>
+                ) : (
+                  createdFiles.map((filename, index) => (
+                    <div key={index} className="flex items-center justify-between bg-white p-3 rounded-lg">
+                      <div className="flex-1">
+                        <div className="font-medium text-gray-900 text-sm">{filename}</div>
+                        <div className="text-xs text-gray-500">datas/{filename}</div>
+                      </div>
+                      <div className="flex space-x-2">
+                        <button
+                          onClick={() => viewFile(filename)}
+                          className="px-3 py-1 bg-blue-100 text-blue-700 rounded text-xs hover:bg-blue-200"
+                        >
+                          View
+                        </button>
+                        <button
+                          onClick={() => deleteFile(filename)}
+                          className="px-3 py-1 bg-red-100 text-red-700 rounded text-xs hover:bg-red-200"
+                        >
+                          <Trash2 className="w-3 h-3" />
+                        </button>
+                      </div>
+                    </div>
+                  ))
+                )}
+                {createdFiles.length > 0 && (
+                  <button
+                    onClick={() => {
+                      if (confirm('Delete all files in datas folder?')) {
+                        fileStorage.clearAllFiles();
+                        setCreatedFiles([]);
+                        alert('All files deleted from datas folder');
+                      }
+                    }}
+                    className="w-full py-2 bg-red-600 text-white rounded-lg text-sm hover:bg-red-700"
+                  >
+                    Clear All Files
+                  </button>
+                )}
+              </div>
+            )}
+          </div>
+
           <div className="bg-blue-50 border border-blue-200 rounded-2xl p-6">
             <h3 className="text-xl font-bold text-blue-900 mb-4">
               📚 Educational Objectives
