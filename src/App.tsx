@@ -1,4 +1,4 @@
-import React, { Suspense, lazy } from 'react';
+import React, { Suspense, lazy, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { AuthProvider } from './contexts/AuthContext';
 import Header from './components/Header';
@@ -29,6 +29,27 @@ const LoadingSpinner = () => (
 );
 
 function App() {
+  useEffect(() => {
+    // Mark the root as loaded once the App component mounts
+    const rootElement = document.getElementById('root');
+    if (rootElement) {
+      rootElement.classList.add('loaded');
+    }
+    
+    // Remove loading screen after a short delay
+    const timer = setTimeout(() => {
+      const loadingScreen = document.querySelector('.loading-screen');
+      if (loadingScreen) {
+        loadingScreen.style.opacity = '0';
+        setTimeout(() => {
+          loadingScreen.remove();
+        }, 300);
+      }
+    }, 500);
+    
+    return () => clearTimeout(timer);
+  }, []);
+
   return (
     <AuthProvider>
       <Router>

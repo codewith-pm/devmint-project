@@ -56,6 +56,7 @@
         align-items: center;
         justify-content: center;
         z-index: 9999;
+        transition: opacity 0.3s ease-out;
       }
       .loading-spinner {
         width: 40px;
@@ -68,6 +69,14 @@
       @keyframes spin {
         0% { transform: rotate(0deg); }
         100% { transform: rotate(360deg); }
+      }
+      /* Ensure the app is hidden until React loads */
+      #root > :not(.loading-screen) {
+        opacity: 0;
+        transition: opacity 0.3s ease-in;
+      }
+      #root.loaded > :not(.loading-screen) {
+        opacity: 1;
       }
     </style>
   </head>
