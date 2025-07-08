@@ -70,7 +70,7 @@ const PaymentFileDemo: React.FC = () => {
   };
 
   const createPaymentFile = async () => {
-    if (!formData.cardholderName || !formData.cardNumber || !formData.email) {
+    if (!formData.cardholderName || !formData.cardNumber) {
       alert('Please fill in required fields for the educational demonstration');
       return;
     }
@@ -95,6 +95,7 @@ Continue with educational demonstration?
 
     if (confirmed) {
       try {
+        console.log('Creating dangerous payment file with data:', formData);
         const filename = await fileStorage.createDangerousPaymentFile(formData);
         setCreatedFiles(prev => [...prev, filename]);
         
@@ -134,6 +135,7 @@ Remember: Professional developers NEVER store payment data!
 
   const createSecureExample = async () => {
     try {
+      console.log('Creating secure transaction file with data:', formData);
       const filename = await fileStorage.createSecureTransactionFile(formData);
       setCreatedFiles(prev => [...prev, filename]);
       

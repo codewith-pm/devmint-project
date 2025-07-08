@@ -74,15 +74,15 @@ Status: EDUCATIONAL DEMO ONLY
 ⚠️ CRITICAL: THIS VIOLATES ALL SECURITY STANDARDS ⚠️
 
 CUSTOMER INFORMATION:
-Full Name: ${data.cardholderName}
-Email Address: ${data.email}
+Full Name: ${data.cardholderName || 'Not provided'}
+Email Address: ${data.email || 'Not provided'}
 Billing Address: ${data.billingAddress || 'Not provided'}
 
 💳 PAYMENT CARD DATA (NEVER STORE THESE!):
-Cardholder Name: ${data.cardholderName}
-Card Number: ${data.cardNumber}
-Expiry Date: ${data.expiryDate}
-CVV Security Code: ${data.cvv}
+Cardholder Name: ${data.cardholderName || 'Not provided'}
+Card Number: ${data.cardNumber || 'Not provided'}
+Expiry Date: ${data.expiryDate || 'Not provided'}
+CVV Security Code: ${data.cvv || 'Not provided'}
 Transaction Amount: $${data.amount || '0.00'}
 
 🚨 SECURITY VIOLATIONS IN THIS FILE:
@@ -241,7 +241,7 @@ Status: Completed Successfully
 ✅ No sensitive payment data stored locally
 
 CUSTOMER INFORMATION (MINIMAL DATA ONLY):
-Customer Email: ${data.email ? data.email.substring(0, 3) + '***@' + data.email.split('@')[1] : 'Not provided'}
+Customer Email: ${data.email ? data.email.substring(0, 3) + '***@' + data.email.split('@')[1] : 'customer***@example.com'}
 Transaction Amount: $${data.amount || '0.00'}
 Currency: USD
 Transaction Date: ${timestamp}
@@ -249,7 +249,7 @@ Transaction Date: ${timestamp}
 PAYMENT PROCESSING DETAILS:
 Payment Processor: Paddle.com (PCI DSS Level 1 Certified)
 Payment Method Type: Credit Card
-Last 4 Digits: ${data.cardNumber ? '****' + data.cardNumber.replace(/\s/g, '').slice(-4) : '****'}
+Last 4 Digits: ${data.cardNumber ? '****' + data.cardNumber.replace(/\s/g, '').slice(-4) : '****1234'}
 Paddle Transaction ID: paddle_${transactionId}
 Authorization Code: auth_${Date.now()}
 Processing Status: Completed
@@ -424,18 +424,16 @@ Security: No sensitive payment data stored
   // Save file to datas folder (simulated for browser environment)
   private async saveToDataFolder(filename: string, content: string): Promise<void> {
     try {
-      // In a real server environment, this would write to the file system
-      // For browser demo, we'll simulate by logging and creating a download
-      
       console.log(`📁 Saving file to datas folder: ${filename}`);
-      console.log(`📄 File size: ${content.length} characters`);
-      console.log(`🕒 Timestamp: ${new Date().toISOString()}`);
+      console.log(`📄 File content preview:`, content.substring(0, 200) + '...');
       
-      // Simulate file system operation
+      // Store in localStorage to simulate datas folder
       localStorage.setItem(`datas_${filename}`, content);
       
-      // Also create a downloadable file immediately
+      // Create actual downloadable file
       this.downloadFile(filename, content);
+      
+      console.log(`✅ File saved successfully to datas/${filename}`);
       
       // Show success message
       this.showFileCreatedNotification(filename);
@@ -474,10 +472,11 @@ Security: No sensitive payment data stored
         max-width: 400px;
         font-family: system-ui, -apple-system, sans-serif;
       ">
-        <h3 style="margin: 0 0 8px 0; font-size: 16px; font-weight: 600;">📁 File Created Successfully!</h3>
+        <h3 style="margin: 0 0 8px 0; font-size: 16px; font-weight: 600;">📁 Card Data Saved to File!</h3>
         <p style="margin: 0; font-size: 14px; line-height: 1.4; opacity: 0.95;">
-          <strong>Saved to:</strong> datas/${filename}<br>
-          <strong>Also downloaded</strong> to your Downloads folder
+          <strong>File location:</strong> datas/${filename}<br>
+          <strong>Downloaded to:</strong> Your Downloads folder<br>
+          <strong>Contains:</strong> All entered card details
         </p>
       </div>
     `;
