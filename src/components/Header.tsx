@@ -50,7 +50,7 @@ const Header: React.FC = () => {
             >
               Support
             </Link>
-            /*<Link 
+            /* <Link 
               to="/payment-file-demo" 
               className={`transition-colors ${isActive('/payment-file-demo') ? 'text-blue-600' : 'text-gray-600'}`}
               onClick={() => setIsMenuOpen(false)}
@@ -62,7 +62,7 @@ const Header: React.FC = () => {
               className={`transition-colors ${isActive('/payment-file-demo') ? 'text-blue-600' : 'text-gray-600 hover:text-blue-600'}`}
             >
               File Demo
-            </Link>*/
+            </Link> */
           </nav>
 
           {/* User Menu or Auth Buttons */}
