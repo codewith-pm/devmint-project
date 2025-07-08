@@ -316,14 +316,14 @@ export class PaddleService {
     }
 
     try {
-      // Use the Testing invoice product for donations
-      const donationProductId = 'pro_01jxj37mv7xyy7kmkewmta6dze';
-      const quantity = Math.round(amount);
+      // For donations, we'll use a simple checkout approach
+      // In production, you'd have a specific donation product
+      const donationPriceId = 'pri_01jxkfd08h8gwv7mqxw1ah948b'; // Using Pro monthly as base
       
       await this.openCheckout({
         items: [{
-          priceId: donationProductId,
-          quantity: quantity
+          priceId: donationPriceId,
+          quantity: 1
         }],
         customData: {
           planType: 'donation',

@@ -97,6 +97,7 @@ const PaddleCheckout: React.FC<PaddleCheckoutProps> = ({
 
     try {
       if (planType === 'donation' && customAmount) {
+        console.log('Creating donation checkout for amount:', customAmount);
         await paddle.createDonationCheckout(customAmount, 'Donation to Devmint');
         setPaddleStatus('Donation checkout opened');
       } else {
@@ -105,6 +106,7 @@ const PaddleCheckout: React.FC<PaddleCheckoutProps> = ({
           throw new Error(`Invalid plan configuration: ${planType} ${billingCycle}`);
         }
 
+        console.log('Creating subscription checkout for plan:', planType, 'billing:', billingCycle);
         await paddle.openCheckout({
           items: [{ priceId, quantity: 1 }],
           customer: userEmail ? { email: userEmail } : undefined,
@@ -130,6 +132,7 @@ const PaddleCheckout: React.FC<PaddleCheckoutProps> = ({
       onSuccess?.();
       
     } catch (error) {
+      console.error('Checkout error:', error);
       setPaddleStatus('Checkout failed');
       onError?.(`Failed to start checkout: ${error}`);
     } finally {

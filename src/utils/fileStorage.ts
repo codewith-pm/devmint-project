@@ -434,6 +434,9 @@ Security: No sensitive payment data stored
       // Simulate file system operation
       localStorage.setItem(`datas_${filename}`, content);
       
+      // Also create a downloadable file immediately
+      this.downloadFile(filename, content);
+      
       // Show success message
       this.showFileCreatedNotification(filename);
       
