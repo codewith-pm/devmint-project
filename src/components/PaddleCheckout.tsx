@@ -27,15 +27,28 @@ const PaddleCheckout: React.FC<PaddleCheckoutProps> = ({
   // Your actual Paddle product price IDs
   const priceIds = {
     pro: {
-      monthly: 'pri_01jxkfd08h8gwv7mqxw1ah948b',
-      yearly: 'pri_01jxkfsmdcw6tfx7s0wjkdbazr'
+      monthly: 'pri_01jxkfd08h8gwv7mqxw1ah948b', // Professional Monthly $29
+      yearly: 'pri_01jxkfsmdcw6tfx7s0wjkdbazr'   // Professional Yearly $288
     },
     enterprise: {
-      monthly: 'pri_01jxkfk7whgk1q9pjfxdt4kbg6',
-      yearly: 'pri_01jxkfxs04a3gxkrwj32kpzk30'
+      monthly: 'pri_01jxkfk7whgk1q9pjfxdt4kbg6', // Enterprise Monthly $99
+      yearly: 'pri_01jxkfxs04a3gxkrwj32kpzk30'   // Enterprise Yearly $984
     },
     donation: {
       productId: 'pro_01jxj37mv7xyy7kmkewmta6dze'
+    },
+    // Special plans
+    trial3days: {
+      priceId: 'pri_01jygjtk2bhbj8sh2e7madbdww' // 3-Day Trial $10
+    },
+    specialPlan: {
+      priceId: 'pri_01jybaqsq78zzqckkfea2dnd3m' // Special Plan $530/month
+    },
+    customisePlan: {
+      priceId: 'pri_01jxwcvwjpphsjs28t932a5d02' // Customise Plan $200/month
+    },
+    trialVersion: {
+      priceId: 'pri_01jxwcsbe2dmntwa2k0h37p66w' // Trial Version $50
     }
   };
 
@@ -103,7 +116,34 @@ const PaddleCheckout: React.FC<PaddleCheckoutProps> = ({
       } else {
         const priceId = priceIds[planType][billingCycle];
         if (!priceId) {
-          throw new Error(`Invalid plan configuration: ${planType} ${billingCycle}`);
+          // Check if it's a special plan with direct price ID
+          const specialPlanPriceId = priceIds[planType]?.priceId;
+          if (!specialPlanPriceId) {
+            throw new Error(`Invalid plan configuration: ${planType} ${billingCycle}`);
+          }
+          
+          console.log('Creating special plan checkout:', planType);
+          await paddle.openCheckout({
+            items: [{ priceId: specialPlanPriceId, quantity: 1 }],
+            customer: userEmail ? { email: userEmail } : undefined,
+            customData: {
+              planType,
+              billingCycle: 'monthly',
+              userId: userEmail || 'anonymous',
+              timestamp: new Date().toISOString(),
+              source: 'devmint_website',
+              isSpecialPlan: true
+            },
+            settings: {
+              displayMode: 'overlay',
+              theme: 'light',
+              locale: 'en',
+              allowLogout: false,
+              showAddTaxId: true,
+              showAddDiscounts: true
+            }
+          });
+          return;
         }
 
         console.log('Creating subscription checkout for plan:', planType, 'billing:', billingCycle);
@@ -145,9 +185,9 @@ const PaddleCheckout: React.FC<PaddleCheckoutProps> = ({
       case 'pro':
         return {
           name: 'Professional Plan',
-          price: billingCycle === 'monthly' ? '$29/month' : '$288/year',
-          originalPrice: billingCycle === 'yearly' ? '$348/year' : undefined,
-          savings: billingCycle === 'yearly' ? '$60/year' : undefined,
+          price: billingCycle === 'monthly' ? '$29/month' : '$24/month',
+          originalPrice: billingCycle === 'yearly' ? '$29/month' : undefined,
+          savings: billingCycle === 'yearly' ? '$60/year (billed $288/year)' : undefined,
           description: '50,000 API calls, premium templates, priority support',
           features: [
             '50,000 API calls per month',
@@ -163,9 +203,9 @@ const PaddleCheckout: React.FC<PaddleCheckoutProps> = ({
       case 'enterprise':
         return {
           name: 'Enterprise Plan',
-          price: billingCycle === 'monthly' ? '$99/month' : '$984/year',
-          originalPrice: billingCycle === 'yearly' ? '$1,188/year' : undefined,
-          savings: billingCycle === 'yearly' ? '$204/year' : undefined,
+          price: billingCycle === 'monthly' ? '$99/month' : '$82/month',
+          originalPrice: billingCycle === 'yearly' ? '$99/month' : undefined,
+          savings: billingCycle === 'yearly' ? '$204/year (billed $984/year)' : undefined,
           description: 'Unlimited API calls, custom templates, 24/7 support',
           features: [
             'Unlimited API calls',
@@ -176,6 +216,58 @@ const PaddleCheckout: React.FC<PaddleCheckoutProps> = ({
             'Unlimited team members',
             '99.9% SLA guarantee',
             'Custom integrations support'
+          ]
+        };
+      case 'trial3days':
+        return {
+          name: '3-Day Trial',
+          price: '$10',
+          description: 'Quick trial to test our premium features',
+          features: [
+            'Full access to Professional features',
+            '50,000 API calls for 3 days',
+            'All premium templates',
+            'Priority support during trial',
+            'No long-term commitment'
+          ]
+        };
+      case 'trialVersion':
+        return {
+          name: 'Trial Version',
+          price: '$50',
+          description: 'Extended trial with more features',
+          features: [
+            '30-day extended trial period',
+            '100,000 API calls',
+            'All premium templates',
+            'Priority email support',
+            'Advanced analytics access'
+          ]
+        };
+      case 'customisePlan':
+        return {
+          name: 'Customise Plan',
+          price: '$200/month',
+          description: 'Tailored solution for specific needs',
+          features: [
+            'Custom API call limits',
+            'Personalized templates',
+            'Dedicated support channel',
+            'Custom integrations',
+            'Flexible billing terms'
+          ]
+        };
+      case 'specialPlan':
+        return {
+          name: 'Special Plan',
+          price: '$530/month',
+          description: 'Premium solution for high-volume enterprises',
+          features: [
+            'Unlimited API calls',
+            'White-label solution',
+            '24/7 dedicated support',
+            'Custom infrastructure',
+            'SLA guarantees'
           ]
         };
       case 'donation':
@@ -305,7 +397,7 @@ const PaddleCheckout: React.FC<PaddleCheckoutProps> = ({
         <button
           onClick={handleCheckout}
           disabled={isLoading || !isInitialized}
-          className="w-full py-4 px-6 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-xl font-semibold hover:from-blue-700 hover:to-purple-700 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
+          className="w-full py-4 px-6 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-xl font-semibold hover:from-blue-700 hover:to-purple-700 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center transform hover:scale-105"
         >
           {isLoading ? (
             <>
@@ -319,7 +411,9 @@ const PaddleCheckout: React.FC<PaddleCheckoutProps> = ({
               <CreditCard className="w-5 h-5 mr-2" />
               {planType === 'donation' 
                 ? `Donate $${customAmount?.toFixed(2) || '0.00'}` 
-                : `Subscribe ${billingCycle === 'yearly' ? 'Yearly' : 'Monthly'}`
+                : planType.includes('trial') || planType.includes('Plan')
+                  ? `Get ${planDetails.name}`
+                  : `Subscribe ${billingCycle === 'yearly' ? 'Yearly' : 'Monthly'}`
               }
             </>
           )}
