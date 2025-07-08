@@ -18,16 +18,51 @@ import {
   Phone,
   Mail,
   Globe,
-  Heart
+  Heart,
+  Rocket,
+  Settings,
+  TestTube
 } from 'lucide-react';
 
 const PricingPage: React.FC = () => {
   const { user } = useAuth();
   const [billingCycle, setBillingCycle] = useState<'monthly' | 'yearly'>('monthly');
-  const [showCheckout, setShowCheckout] = useState<{ plan: string; billing: 'monthly' | 'yearly' } | null>(null);
+  const [showCheckout, setShowCheckout] = useState<{ plan: string; billing: 'monthly' | 'yearly'; priceId: string } | null>(null);
   const [showDonation, setShowDonation] = useState(false);
 
-  const plans = [
+  // Live Paddle pricing data
+  const pricingData = {
+    professional: {
+      monthly: { priceId: 'pri_01jxkfd08h8gwv7mqxw1ah948b', price: 29 },
+      yearly: { priceId: 'pri_01jxkfsmdcw6tfx7s0wjkdbazr', price: 24, realPrice: 288 }
+    },
+    enterprise: {
+      monthly: { priceId: 'pri_01jxkfk7whgk1q9pjfxdt4kbg6', price: 99 },
+      yearly: { priceId: 'pri_01jxkfxs04a3gxkrwj32kpzk30', price: 82, realPrice: 984 }
+    },
+    trial3days: {
+      priceId: 'pri_01jygjtk2bhbj8sh2e7madbdww',
+      price: 10,
+      productId: 'pro_01jygjsab5er6bzj07zmxz1rvw'
+    },
+    specialPlan: {
+      priceId: 'pri_01jybaqsq78zzqckkfea2dnd3m',
+      price: 530,
+      productId: 'pro_01jybakxbgryn1h7vmpx4z3yym'
+    },
+    customisePlan: {
+      priceId: 'pri_01jxwcvwjpphsjs28t932a5d02',
+      price: 200,
+      productId: 'pro_01jxwctms1vtq9asavhjfjs760'
+    },
+    trialVersion: {
+      priceId: 'pri_01jxwcsbe2dmntwa2k0h37p66w',
+      price: 50,
+      productId: 'pro_01jxwcpx66th3ze4x00h89nv5v'
+    }
+  };
+
+  const mainPlans = [
     {
       name: "Starter",
       description: "Perfect for testing and small projects",
@@ -51,14 +86,25 @@ const PricingPage: React.FC = () => {
       buttonText: { monthly: "Start Free", yearly: "Start Free" },
       buttonStyle: "secondary",
       icon: <Zap className="w-6 h-6" />,
-      note: "No credit card required"
+      note: "No credit card required",
+      planType: "starter"
     },
     {
       name: "Professional",
       description: "For growing businesses and teams",
-      price: { monthly: 29, yearly: 24 },
+      price: { 
+        monthly: pricingData.professional.monthly.price, 
+        yearly: pricingData.professional.yearly.price 
+      },
       originalPrice: { monthly: 29, yearly: 29 },
-      realPrice: { monthly: 29, yearly: 288 }, // Real prices
+      realPrice: { 
+        monthly: pricingData.professional.monthly.price, 
+        yearly: pricingData.professional.yearly.realPrice 
+      },
+      priceIds: {
+        monthly: pricingData.professional.monthly.priceId,
+        yearly: pricingData.professional.yearly.priceId
+      },
       features: [
         { name: "50,000 API calls/month", included: true },
         { name: "25+ premium templates", included: true },
@@ -77,14 +123,25 @@ const PricingPage: React.FC = () => {
       buttonText: { monthly: "Start 14-Day Trial", yearly: "Subscribe Yearly" },
       buttonStyle: "primary",
       icon: <Star className="w-6 h-6" />,
-      note: "Most popular choice"
+      note: "Most popular choice",
+      planType: "pro"
     },
     {
       name: "Enterprise",
       description: "For large organizations with high-volume needs",
-      price: { monthly: 99, yearly: 82 },
+      price: { 
+        monthly: pricingData.enterprise.monthly.price, 
+        yearly: pricingData.enterprise.yearly.price 
+      },
       originalPrice: { monthly: 99, yearly: 99 },
-      realPrice: { monthly: 99, yearly: 984 }, // Real prices
+      realPrice: { 
+        monthly: pricingData.enterprise.monthly.price, 
+        yearly: pricingData.enterprise.yearly.realPrice 
+      },
+      priceIds: {
+        monthly: pricingData.enterprise.monthly.priceId,
+        yearly: pricingData.enterprise.yearly.priceId
+      },
       features: [
         { name: "Unlimited API calls", included: true },
         { name: "All premium templates", included: true },
@@ -103,65 +160,95 @@ const PricingPage: React.FC = () => {
       buttonText: { monthly: "Contact Sales", yearly: "Contact Sales" },
       buttonStyle: "secondary",
       icon: <Crown className="w-6 h-6" />,
-      note: "Volume discounts available"
+      note: "Volume discounts available",
+      planType: "enterprise"
     }
   ];
 
-  const addOns = [
+  const specialPlans = [
     {
-      name: "Additional API Calls",
-      description: "Extra API calls beyond your plan limit",
-      price: "$0.001 per call",
-      icon: <Zap className="w-5 h-5" />
+      name: "3-Day Trial",
+      description: "Quick trial to test our premium features",
+      price: pricingData.trial3days.price,
+      priceId: pricingData.trial3days.priceId,
+      productId: pricingData.trial3days.productId,
+      features: [
+        "Full access to Professional features",
+        "50,000 API calls for 3 days",
+        "All premium templates",
+        "Priority support during trial",
+        "No long-term commitment"
+      ],
+      icon: <TestTube className="w-6 h-6" />,
+      buttonText: "Start 3-Day Trial",
+      buttonStyle: "primary",
+      planType: "trial3days",
+      badge: "Quick Start"
     },
     {
-      name: "Premium Support",
-      description: "Dedicated support channel with faster response times",
-      price: "$49/month",
-      icon: <Phone className="w-5 h-5" />
+      name: "Trial Version",
+      description: "Extended trial with more features",
+      price: pricingData.trialVersion.price,
+      priceId: pricingData.trialVersion.priceId,
+      productId: pricingData.trialVersion.productId,
+      features: [
+        "30-day extended trial period",
+        "100,000 API calls",
+        "All premium templates",
+        "Priority email support",
+        "Advanced analytics access",
+        "Team collaboration features"
+      ],
+      icon: <Rocket className="w-6 h-6" />,
+      buttonText: "Start Extended Trial",
+      buttonStyle: "secondary",
+      planType: "trialVersion",
+      badge: "Extended"
     },
     {
-      name: "Advanced Analytics",
-      description: "Enhanced reporting and business intelligence features",
-      price: "$19/month",
-      icon: <Sparkles className="w-5 h-5" />
+      name: "Customise Plan",
+      description: "Tailored solution for specific needs",
+      price: pricingData.customisePlan.price,
+      priceId: pricingData.customisePlan.priceId,
+      productId: pricingData.customisePlan.productId,
+      features: [
+        "Custom API call limits",
+        "Personalized templates",
+        "Dedicated support channel",
+        "Custom integrations",
+        "Flexible billing terms",
+        "Priority feature requests"
+      ],
+      icon: <Settings className="w-6 h-6" />,
+      buttonText: "Get Custom Plan",
+      buttonStyle: "secondary",
+      planType: "customisePlan",
+      badge: "Flexible"
     },
     {
-      name: "Extended Rate Limits",
-      description: "Higher API rate limits for burst traffic handling",
-      price: "$29/month",
-      icon: <Users className="w-5 h-5" />
+      name: "Special Plan",
+      description: "Premium solution for high-volume enterprises",
+      price: pricingData.specialPlan.price,
+      priceId: pricingData.specialPlan.priceId,
+      productId: pricingData.specialPlan.productId,
+      features: [
+        "Unlimited API calls",
+        "White-label solution",
+        "24/7 dedicated support",
+        "Custom infrastructure",
+        "SLA guarantees",
+        "On-premise deployment option",
+        "Custom contract terms"
+      ],
+      icon: <Crown className="w-6 h-6" />,
+      buttonText: "Contact for Special Plan",
+      buttonStyle: "primary",
+      planType: "specialPlan",
+      badge: "Premium"
     }
   ];
 
-  const faqs = [
-    {
-      question: "Can I change my plan at any time?",
-      answer: "Yes! You can upgrade or downgrade your plan at any time. Upgrades take effect immediately, while downgrades take effect at the end of your current billing cycle."
-    },
-    {
-      question: "What happens if I exceed my API limit?",
-      answer: "If you exceed your monthly API limit, your requests will be throttled. You can purchase additional API calls or upgrade to a higher plan to avoid interruptions."
-    },
-    {
-      question: "Do you offer refunds?",
-      answer: "We offer a 30-day money-back guarantee for all paid plans. If you're not satisfied, contact our support team for a full refund within 30 days."
-    },
-    {
-      question: "Is there a setup fee?",
-      answer: "No setup fees! You only pay the monthly or yearly subscription fee. Enterprise customers may have custom pricing based on their specific requirements."
-    },
-    {
-      question: "Can I cancel my subscription anytime?",
-      answer: "Yes, you can cancel your subscription at any time through your account dashboard. You'll retain access to paid features until the end of your billing period."
-    },
-    {
-      question: "Do you offer volume discounts?",
-      answer: "Yes! Enterprise customers and high-volume users can contact our sales team for custom pricing and volume discounts."
-    }
-  ];
-
-  const getSavings = (plan: typeof plans[0]) => {
+  const getSavings = (plan: typeof mainPlans[0]) => {
     if (plan.realPrice && plan.realPrice.yearly > 0) {
       const monthlyCost = plan.realPrice.monthly * 12;
       const yearlyCost = plan.realPrice.yearly;
@@ -170,49 +257,45 @@ const PricingPage: React.FC = () => {
     return 0;
   };
 
-  const getYearlyPrice = (plan: typeof plans[0]) => {
+  const getYearlyPrice = (plan: typeof mainPlans[0]) => {
     return plan.realPrice ? plan.realPrice.yearly : plan.price.yearly * 12;
   };
 
-  const getButtonText = (plan: typeof plans[0]) => {
+  const getButtonText = (plan: typeof mainPlans[0]) => {
     return plan.buttonText[billingCycle];
   };
 
-  const handlePlanSelect = (planName: string) => {
-    // Prevent automatic redirects - wait for user action
-    if (planName === 'Starter') {
+  const handlePlanSelect = (plan: any, isSpecialPlan = false) => {
+    if (plan.planType === 'starter') {
       if (user) {
-        // Don't auto-redirect, let user click
-        return;
+        window.location.href = '/dashboard';
       } else {
-        // Don't auto-redirect, let user click
-        return;
+        window.location.href = '/signup';
       }
-    } else if (planName === 'Enterprise') {
-      // Don't auto-redirect, let user click
       return;
-    } else {
-      // Map plan names to the expected planType values for PaddleCheckout
-      const planTypeMap: { [key: string]: string } = {
-        'Professional': 'pro',
-        'Enterprise': 'enterprise'
-      };
-      
-      const planType = planTypeMap[planName] || planName.toLowerCase();
-      setShowCheckout({ plan: planType, billing: billingCycle });
     }
-  };
 
-  const handleStarterClick = () => {
-    if (user) {
-      window.location.href = '/dashboard';
-    } else {
-      window.location.href = '/signup';
+    if (plan.planType === 'enterprise' && !isSpecialPlan) {
+      window.location.href = '/support';
+      return;
     }
-  };
 
-  const handleEnterpriseClick = () => {
-    window.location.href = '/support';
+    if (isSpecialPlan) {
+      // Handle special plans
+      setShowCheckout({ 
+        plan: plan.planType, 
+        billing: 'monthly', 
+        priceId: plan.priceId 
+      });
+    } else {
+      // Handle main plans
+      const priceId = plan.priceIds[billingCycle];
+      setShowCheckout({ 
+        plan: plan.planType, 
+        billing: billingCycle, 
+        priceId: priceId 
+      });
+    }
   };
 
   if (showCheckout) {
@@ -221,7 +304,7 @@ const PricingPage: React.FC = () => {
         <div className="max-w-2xl mx-auto">
           <div className="text-center mb-8">
             <h1 className="text-3xl font-bold text-gray-900 mb-4">Complete Your Subscription</h1>
-            <p className="text-gray-600">Secure payment processing by Devmint</p>
+            <p className="text-gray-600">Secure payment processing by Paddle.com</p>
           </div>
           
           <PaddleCheckout
@@ -229,7 +312,7 @@ const PricingPage: React.FC = () => {
             billingCycle={showCheckout.billing}
             userEmail={user?.email}
             onSuccess={() => {
-              // Don't auto-redirect, let Paddle handle it
+              // Success handled by Paddle
             }}
             onError={(error) => {
               alert(`Subscription failed: ${error}`);
@@ -325,11 +408,16 @@ const PricingPage: React.FC = () => {
         </div>
       </section>
 
-      {/* Pricing Cards */}
+      {/* Main Pricing Cards */}
       <section className="px-4 sm:px-6 lg:px-8 pb-20">
         <div className="max-w-7xl mx-auto">
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            {plans.map((plan, index) => (
+          <div className="text-center mb-12">
+            <h2 className="text-3xl font-bold text-gray-900 mb-4">Main Plans</h2>
+            <p className="text-gray-600">Our core subscription plans for every business size</p>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-20">
+            {mainPlans.map((plan, index) => (
               <div 
                 key={plan.name}
                 className={`relative bg-white rounded-3xl shadow-xl transition-all duration-300 transform hover:-translate-y-2 ${
@@ -417,15 +505,7 @@ const PricingPage: React.FC = () => {
 
                   {/* CTA Button */}
                   <button
-                    onClick={() => {
-                      if (plan.name === 'Starter') {
-                        handleStarterClick();
-                      } else if (plan.name === 'Enterprise') {
-                        handleEnterpriseClick();
-                      } else {
-                        handlePlanSelect(plan.name);
-                      }
-                    }}
+                    onClick={() => handlePlanSelect(plan)}
                     className={`w-full py-4 px-6 rounded-xl font-semibold text-center transition-all duration-200 ${
                       plan.buttonStyle === 'primary'
                         ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white hover:from-blue-700 hover:to-purple-700 transform hover:scale-105 shadow-lg'
@@ -439,8 +519,60 @@ const PricingPage: React.FC = () => {
             ))}
           </div>
 
+          {/* Special Plans Section */}
+          <div className="text-center mb-12">
+            <h2 className="text-3xl font-bold text-gray-900 mb-4">Special Plans & Trials</h2>
+            <p className="text-gray-600">Custom solutions and trial options for specific needs</p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-16">
+            {specialPlans.map((plan, index) => (
+              <div key={plan.name} className="relative bg-white rounded-2xl shadow-lg p-6 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
+                {plan.badge && (
+                  <div className="absolute -top-3 left-4">
+                    <span className="bg-gradient-to-r from-purple-500 to-pink-500 text-white px-3 py-1 rounded-full text-xs font-semibold">
+                      {plan.badge}
+                    </span>
+                  </div>
+                )}
+                
+                <div className="text-center mb-6">
+                  <div className="w-12 h-12 bg-gradient-to-r from-blue-600 to-purple-600 rounded-xl flex items-center justify-center text-white mx-auto mb-4">
+                    {plan.icon}
+                  </div>
+                  <h3 className="text-lg font-bold text-gray-900 mb-2">{plan.name}</h3>
+                  <p className="text-gray-600 text-sm mb-4">{plan.description}</p>
+                  <div className="text-3xl font-bold text-blue-600 mb-4">
+                    ${plan.price}
+                    {plan.name.includes('Plan') ? '/month' : ''}
+                  </div>
+                </div>
+
+                <ul className="space-y-2 mb-6">
+                  {plan.features.map((feature, featureIndex) => (
+                    <li key={featureIndex} className="flex items-center text-sm text-gray-700">
+                      <Check className="w-4 h-4 text-green-500 mr-2 flex-shrink-0" />
+                      {feature}
+                    </li>
+                  ))}
+                </ul>
+
+                <button
+                  onClick={() => handlePlanSelect(plan, true)}
+                  className={`w-full py-3 px-4 rounded-xl font-semibold text-center transition-all duration-200 ${
+                    plan.buttonStyle === 'primary'
+                      ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white hover:from-blue-700 hover:to-purple-700 transform hover:scale-105 shadow-lg'
+                      : 'bg-gray-100 text-gray-900 hover:bg-gray-200'
+                  }`}
+                >
+                  {plan.buttonText}
+                </button>
+              </div>
+            ))}
+          </div>
+
           {/* Donation Section */}
-          <div className="mt-16 text-center">
+          <div className="text-center">
             <div className="bg-white rounded-3xl shadow-xl p-8 max-w-2xl mx-auto">
               <div className="w-16 h-16 bg-gradient-to-r from-pink-500 to-red-500 rounded-2xl flex items-center justify-center mx-auto mb-6">
                 <Heart className="w-8 h-8 text-white" />
@@ -462,31 +594,6 @@ const PricingPage: React.FC = () => {
         </div>
       </section>
 
-      {/* Add-ons Section */}
-      <section className="py-20 px-4 sm:px-6 lg:px-8 bg-white">
-        <div className="max-w-7xl mx-auto">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl font-bold text-gray-900 mb-4">Add-ons & Extras</h2>
-            <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-              Enhance your plan with additional features and services
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {addOns.map((addon, index) => (
-              <div key={index} className="bg-gradient-to-br from-gray-50 to-blue-50 rounded-2xl p-6 hover:shadow-lg transition-all duration-300">
-                <div className="w-12 h-12 bg-gradient-to-r from-blue-600 to-purple-600 rounded-xl flex items-center justify-center text-white mb-4">
-                  {addon.icon}
-                </div>
-                <h3 className="text-lg font-semibold text-gray-900 mb-2">{addon.name}</h3>
-                <p className="text-gray-600 text-sm mb-4">{addon.description}</p>
-                <div className="text-xl font-bold text-blue-600">{addon.price}</div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
       {/* Custom Plan Section */}
       <section className="py-20 px-4 sm:px-6 lg:px-8 bg-gradient-to-r from-blue-600 to-purple-600">
         <div className="max-w-7xl mx-auto">
@@ -494,11 +601,11 @@ const PricingPage: React.FC = () => {
             <div>
               <div className="flex items-center mb-6">
                 <Building className="w-8 h-8 text-blue-200 mr-3" />
-                <h2 className="text-3xl font-bold text-white">Custom Plans Available</h2>
+                <h2 className="text-3xl font-bold text-white">Need Something Different?</h2>
               </div>
               <p className="text-xl text-blue-100 mb-8">
-                Need something beyond our standard plans? We offer custom solutions for organizations 
-                with unique requirements, high-volume usage, and specific compliance needs.
+                We offer custom solutions for organizations with unique requirements, 
+                high-volume usage, and specific compliance needs.
               </p>
               
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
@@ -522,7 +629,7 @@ const PricingPage: React.FC = () => {
             </div>
             
             <div className="bg-white rounded-2xl p-8 shadow-2xl">
-              <h3 className="text-2xl font-bold text-gray-900 mb-6">Custom Plan Pricing</h3>
+              <h3 className="text-2xl font-bold text-gray-900 mb-6">Available Custom Options</h3>
               
               <div className="space-y-6 mb-8">
                 <div className="p-4 bg-blue-50 rounded-xl">
@@ -560,35 +667,7 @@ const PricingPage: React.FC = () => {
                   +1(740)738-2589
                 </a>
               </div>
-              
-              <div className="mt-6 p-4 bg-gray-50 rounded-xl">
-                <p className="text-sm text-gray-600 text-center">
-                  <strong>Note:</strong> Custom plans are quoted based on specific requirements. 
-                  Minimum commitment may apply for enterprise features.
-                </p>
-              </div>
             </div>
-          </div>
-        </div>
-      </section>
-
-      {/* FAQ Section */}
-      <section className="py-20 px-4 sm:px-6 lg:px-8 bg-gradient-to-br from-gray-50 to-blue-50">
-        <div className="max-w-4xl mx-auto">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl font-bold text-gray-900 mb-4">Frequently Asked Questions</h2>
-            <p className="text-xl text-gray-600">
-              Everything you need to know about our pricing and plans
-            </p>
-          </div>
-
-          <div className="space-y-6">
-            {faqs.map((faq, index) => (
-              <div key={index} className="bg-white rounded-2xl shadow-lg p-6">
-                <h3 className="text-lg font-semibold text-gray-900 mb-3">{faq.question}</h3>
-                <p className="text-gray-700 leading-relaxed">{faq.answer}</p>
-              </div>
-            ))}
           </div>
         </div>
       </section>
