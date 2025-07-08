@@ -275,11 +275,6 @@ const PricingPage: React.FC = () => {
       return;
     }
 
-    if (plan.planType === 'enterprise' && !isSpecialPlan) {
-      window.location.href = '/support';
-      return;
-    }
-
     if (isSpecialPlan) {
       // Handle special plans
       setShowCheckout({ 

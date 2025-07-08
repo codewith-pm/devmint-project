@@ -30,24 +30,36 @@ const LoadingSpinner = () => (
 
 function App() {
   useEffect(() => {
-    // Mark the root as loaded once the App component mounts
+    // Remove loading screen when React app is ready
+    const removeLoadingScreen = () => {
+      const loadingScreen = document.querySelector('.loading-screen');
+      if (loadingScreen) {
+        loadingScreen.style.opacity = '0';
+        setTimeout(() => {
+          if (loadingScreen.parentNode) {
+            loadingScreen.parentNode.removeChild(loadingScreen);
+          }
+        }, 300);
+      }
+    };
+
+    // Mark root as loaded and remove loading screen
     const rootElement = document.getElementById('root');
     if (rootElement) {
       rootElement.classList.add('loaded');
     }
     
-    // Remove loading screen after a short delay
-    const timer = setTimeout(() => {
-      const loadingScreen = document.querySelector('.loading-screen');
-      if (loadingScreen) {
-        loadingScreen.style.opacity = '0';
-        setTimeout(() => {
-          loadingScreen.remove();
-        }, 300);
-      }
-    }, 500);
+    // Remove loading screen with multiple fallbacks
+    const timer1 = setTimeout(removeLoadingScreen, 100);
+    const timer2 = setTimeout(removeLoadingScreen, 1000);
+    const timer3 = setTimeout(removeLoadingScreen, 3000);
     
-    return () => clearTimeout(timer);
+    // Cleanup timers
+    return () => {
+      clearTimeout(timer1);
+      clearTimeout(timer2);
+      clearTimeout(timer3);
+    };
   }, []);
 
   return (

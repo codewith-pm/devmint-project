@@ -71,12 +71,8 @@
         100% { transform: rotate(360deg); }
       }
       /* Ensure the app is hidden until React loads */
-      #root > :not(.loading-screen) {
-        opacity: 0;
-        transition: opacity 0.3s ease-in;
-      }
-      #root.loaded > :not(.loading-screen) {
-        opacity: 1;
+      #root:not(.loaded) > :not(.loading-screen) {
+        display: none;
       }
     </style>
   </head>
