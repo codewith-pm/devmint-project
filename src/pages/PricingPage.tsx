@@ -165,7 +165,7 @@ const PricingPage: React.FC = () => {
     }
   ];
 
-  /* const specialPlans = [
+  const specialPlans = [
     {
       name: "3-Day Trial",
       description: "Quick trial to test our premium features",
@@ -246,7 +246,7 @@ const PricingPage: React.FC = () => {
       planType: "specialPlan",
       badge: "Premium"
     }
-  ]; */
+  ];
 
   const getSavings = (plan: typeof mainPlans[0]) => {
     if (plan.realPrice && plan.realPrice.yearly > 0) {
