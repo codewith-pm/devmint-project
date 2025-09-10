@@ -567,7 +567,7 @@ const PricingPage: React.FC = () => {
           </div>
 
           {/* Donation Section */}
-        /*  <div className="text-center">
+         <div className="text-center">
             <div className="bg-white rounded-3xl shadow-xl p-8 max-w-2xl mx-auto">
               <div className="w-16 h-16 bg-gradient-to-r from-pink-500 to-red-500 rounded-2xl flex items-center justify-center mx-auto mb-6">
                 <Heart className="w-8 h-8 text-white" />
@@ -585,7 +585,7 @@ const PricingPage: React.FC = () => {
                 Make a Donation
               </button>
             </div>
-          </div> */
+          </div>
         </div>
       </section>
 
