@@ -565,7 +565,7 @@ const PricingPage: React.FC = () => {
               </div>
             ))}
           </div>
-
+/*
           {/* Donation Section */}
          <div className="text-center">
             <div className="bg-white rounded-3xl shadow-xl p-8 max-w-2xl mx-auto">
@@ -666,7 +666,7 @@ const PricingPage: React.FC = () => {
           </div>
         </div>
       </section>
-
+*/
       {/* CTA Section */}
       <section className="py-20 px-4 sm:px-6 lg:px-8 bg-white">
         <div className="max-w-4xl mx-auto text-center">
